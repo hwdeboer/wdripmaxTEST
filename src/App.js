@@ -89,7 +89,7 @@ function App() {
     //setInputValue("");
   }
 
-  async function approve() {
+  async function approveWdrip() {
     if (connected & (valueMintRedeem > 0)) {
       // Connect the wallet using ethers.js
       try {
@@ -105,14 +105,57 @@ function App() {
           signer
         );
 
-        let result = await wdripOnlyUPContract.approve(
+        const wdripContract = new ethers.Contract(
+          wdripAddress,
+          ABIWDRIP,
+          signer
+        );
+
+        let approveTx = await wdripContract.approve(
           wdripOnlyUPAddress,
           valueMintRedeem,
           {
             from: _walletAddress,
           }
         );
-        result = await result.wait();
+        let result = await approveTx.wait();
+        //console.log(result);
+      } catch (err) {
+        //  {code: 4100, message: 'The requested method and/or account has not been authorized by the user.'}
+      }
+    }
+  }
+
+  async function approveWdripMax() {
+    if (connected & (valueMintRedeem > 0)) {
+      // Connect the wallet using ethers.js
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const _walletAddress = await signer.getAddress();
+        setConnected(true);
+        setWalletAddress(_walletAddress);
+
+        const wdripOnlyUPContract = new ethers.Contract(
+          wdripOnlyUPAddress,
+          ABIWDRIP,
+          signer
+        );
+
+        const wdripContract = new ethers.Contract(
+          wdripAddress,
+          ABIWDRIP,
+          signer
+        );
+
+        let approveTx = await wdripOnlyUPContract.approve(
+          wdripOnlyUPAddress,
+          valueMintRedeem,
+          {
+            from: _walletAddress,
+          }
+        );
+        let result = await approveTx.wait();
         //console.log(result);
       } catch (err) {
         //  {code: 4100, message: 'The requested method and/or account has not been authorized by the user.'}
@@ -137,14 +180,14 @@ function App() {
           signer
         );
 
-        let mintAmount = await wdripOnlyUPContract.mintWithBacking(
+        let mintAmountTx = await wdripOnlyUPContract.mintWithBacking(
           valueMintRedeem,
           _walletAddress,
           {
             from: _walletAddress,
           }
         );
-        let result = await result.wait();
+        let result = await mintAmountTx.wait();
       } catch (err) {
         //  {code: 4100, message: 'The requested method and/or account has not been authorized by the user.'}
       }
@@ -153,30 +196,30 @@ function App() {
 
   // Function to connect/disconnect the wallet
   async function redeem() {
-    if (connected & (valueMintRedeem > 0)) {
-      try {
-        // Connect the wallet using ethers.js
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const _walletAddress = await signer.getAddress();
-        //setConnected(true);
-        //setWalletAddress(_walletAddress);
+    //if (connected & (valueMintRedeem > 0)) {
+    try {
+      // Connect the wallet using ethers.js
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const _walletAddress = await signer.getAddress();
+      //setConnected(true);
+      //setWalletAddress(_walletAddress);
 
-        const wdripOnlyUPContract = new ethers.Contract(
-          wdripOnlyUPAddress,
-          ABIWDRIP,
-          signer
-        );
+      const wdripOnlyUPContract = new ethers.Contract(
+        wdripOnlyUPAddress,
+        ABIWDRIP,
+        signer
+      );
 
-        let redeemAmount = await wdripOnlyUPContract.sell(valueMintRedeem, {
-          from: _walletAddress,
-        });
+      let redeemAmountTx = await wdripOnlyUPContract.sell(valueMintRedeem, {
+        from: _walletAddress,
+      });
 
-        let result = await result.wait();
-      } catch (err) {
-        //  {code: 4100, message: 'The requested method and/or account has not been authorized by the user.'}
-      }
+      let result = await redeemAmountTx.wait();
+    } catch (err) {
+      //  {code: 4100, message: 'The requested method and/or account has not been authorized by the user.'}
     }
+    //}
   }
 
   async function getMyBalance() {
@@ -273,14 +316,14 @@ function App() {
             Submit
           </button>
         </form>
-        <button className="btn" onClick={approve}>
-          {connected ? "Approve token" : "Approve token"}
+        <button className="btn" onClick={approveWdrip}>
+          {connected ? "Approve for mint" : "Approve for mint"}
         </button>
         <button className="btn" onClick={mint}>
-          {connected ? "Mint token" : "Mint token"}
+          {connected ? "Mint wDripMax" : "Mint wDripMax"}
         </button>
         <button className="btn" onClick={redeem}>
-          {connected ? "Redeem token" : "Redeem token"}
+          {connected ? "Redeem wDripMax" : "Redeem wDripMax"}
         </button>
       </div>
 
